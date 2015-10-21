@@ -601,7 +601,7 @@ postgresqlImportFile <- function(con, name, value, field.types = NULL, overwrite
 ## TODO: This function should execute its sql as a single transaction,
 ##       and allow converter functions.
 postgresqlWriteTable <- function(con, name, value, field.types, row.names = TRUE,
-                                 overwrite = FALSE, append = FALSE, ..., allow.keywords = FALSE) {
+                                 overwrite = FALSE, append = FALSE, ..., allow.keywords = FALSE, match.cols = FALSE) {
     if(overwrite && append)
         stop("overwrite and append cannot both be TRUE")
     if(!is.data.frame(value))
@@ -614,6 +614,17 @@ postgresqlWriteTable <- function(con, name, value, field.types, row.names = TRUE
         ## the following mapping should be coming from some kind of table
         ## also, need to use converter functions (for dates, etc.)
         field.types <- sapply(value, dbDataType, dbObj = con)
+    }
+    if(match.cols) {
+        if(!append) {
+            stop("append must be TRUE when match.cols is TRUE")
+        }
+        columns <- dbListFields(con, name)
+        if(any(is.na(match(colnames(value), columns)))) {
+            stop("at least one of the column names does not exist in the destination table")
+        } else {
+            columns <- colnames(value)
+        }
     }
 
     i <- match("row.names", names(field.types), nomatch=0)
@@ -656,7 +667,11 @@ postgresqlWriteTable <- function(con, name, value, field.types, row.names = TRUE
     })
     oldenc <- dbGetQuery(new.con, "SHOW client_encoding")
     postgresqlpqExec(new.con, "SET CLIENT_ENCODING TO 'UTF8'")
-    sql4 <- paste("COPY", postgresqlTableRef(name),"(",paste(postgresqlQuoteId(names(value)),collapse=","),") FROM STDIN")
+    if(match.cols) {
+        sql4 <- paste0('COPY ', postgresqlTableRef(name), ' ("', paste(columns, collapse = '","'), '") FROM STDIN')
+    } else {
+        sql4 <- paste("COPY", postgresqlTableRef(name),"(",paste(postgresqlQuoteId(names(value)),collapse=","),") FROM STDIN")
+    }
     postgresqlpqExec(new.con, sql4)
     postgresqlCopyInDataframe(new.con, value)
     rs<-postgresqlgetResult(new.con)
