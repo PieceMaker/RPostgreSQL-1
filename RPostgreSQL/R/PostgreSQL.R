@@ -228,19 +228,17 @@ setMethod("dbRollback",
 ## return field names (no metadata)
 setMethod("dbListFields",
           signature(conn="PostgreSQLConnection", name="character"),
-          def = function(conn, name, schema = NA, ...){
+          def = function(conn, name, ...){
               #Allow names to be passed in in the form of "schema.tablename"
               name <- unlist(strsplit(name, '[.]'))
               qlength <- length(name)
               if(qlength == 1){
-                  if(is.na(schema)){
-                      currentschema <- dbGetQuery(conn, "SELECT current_schema()")
-                  }
-                  flds <- dbGetQuery(conn,
-                      paste("select a.attname from pg_attribute a, pg_class c, pg_tables t, pg_namespace nsp",
-                      " where a.attrelid = c.oid and c.relname = tablename and c.relnamespace = nsp.oid and a.attnum > 0 and ",
-                      "nspname = current_schema() and schemaname = nspname and ",
-                      "tablename = '", postgresqlEscapeStrings(conn, name), "'", sep=""))[,1]
+              currentschema <- dbGetQuery(conn, "SELECT current_schema()")
+              flds <- dbGetQuery(conn,
+                  paste("select a.attname from pg_attribute a, pg_class c, pg_tables t, pg_namespace nsp",
+                  " where a.attrelid = c.oid and c.relname = tablename and c.relnamespace = nsp.oid and a.attnum > 0 and ",
+                  "nspname = current_schema() and schemaname = nspname and ",
+                  "tablename = '", postgresqlEscapeStrings(conn, name), "'", sep=""))[,1]
               }
               else{
                   if(qlength == 2){
