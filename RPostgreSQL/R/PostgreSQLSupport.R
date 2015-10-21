@@ -621,7 +621,8 @@ postgresqlWriteTable <- function(con, name, value, field.types, row.names = TRUE
         }
         columns <- dbListFields(con, name)
         if(any(is.na(match(colnames(value), columns)))) {
-            stop("at least one of the column names does not exist in the destination table")
+            mismatch <- which(is.na(match(colnames(value), columns)))
+            stop(paste("the following column names do not exist in the destination table:", paste(colnames(value)[mismatch], collapse = ',')))
         } else {
             columns <- colnames(value)
         }
