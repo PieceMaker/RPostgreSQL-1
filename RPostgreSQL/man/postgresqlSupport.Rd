@@ -203,6 +203,12 @@ Command-line options to be sent to the server
    logical indicating whether to append \code{value} to the existing
    table \code{name}.
 }
+\item{match.cols}{
+   logical indicating whether to match the column names of the
+   destination table with the names of the data frame being
+   written. Requires \code{append} to be \code{TRUE}. The default is
+   \code{FALSE}.
+}
 \item{nrows}{
   number of lines to rows to import using \code{read.table} from the
   input file to create the proper table definition. Default is 50.

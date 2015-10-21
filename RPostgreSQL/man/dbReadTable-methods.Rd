@@ -58,6 +58,12 @@
   a logical specifying whether to append to an existing table
   in the DBMS.  Its default is \code{FALSE}.
   }
+\item{match.cols}{
+  logical indicating whether to match the column names of the
+  destination table with the names of the data frame being
+  written. Requires \code{append} to be \code{TRUE}. The default is
+  \code{FALSE}.
+  }
 \item{allow.keywords}{
    \code{dbWriteTable} accepts a logical \code{allow.keywords} 
     to allow or prevent PostgreSQL reserved identifiers to be used as
